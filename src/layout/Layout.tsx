@@ -4,10 +4,10 @@ import Sidebar from './Sidebar';
 
 function Layout() {
   return (
-    <div className="md:flex min-h-screen">
+    <div className="min-h-screen md:flex">
       <Sidebar />
 
-      <div className='md:w-3/5 xl:w-4/5'>
+      <div className='p-6 md:w-3/5 xl:w-4/5'>
         <Outlet />
       </div>
     </div>
