@@ -6,22 +6,30 @@ import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 // Pages
-import Ordenes from './pages/ordenes.tsx';
-import Menu from './pages/Menu.tsx';
-import NuevoPlatillo from './pages/NuevoPlatillo.tsx';
+import Layout from './layout/Layout';
+
+import Ordenes from './pages/Ordenes';
+import Menu from './pages/Menu';
+import NuevoPlatillo from './pages/NuevoPlatillo';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Ordenes />
-  },
-  {
-    path: '/menu',
-    element: <Menu />,
-  },
-  {
-    path: '/nuevo-platillo',
-    element: <NuevoPlatillo />,
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <Ordenes />,
+      },
+      {
+        path: 'menu',
+        element: <Menu />,
+      },
+      {
+        path: 'nuevo-platillo',
+        element: <NuevoPlatillo />,
+      },
+    ]
   },
 ]);
 
