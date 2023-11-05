@@ -37,6 +37,7 @@ function Platillo({ platillo }: Props) {
             <img
               src={imagen}
               alt="imagen platillo"
+              className='w-full h-44'
             />
 
             <div className="mt-3 sm:flex sm:gap-2">
