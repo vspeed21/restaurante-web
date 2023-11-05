@@ -1,15 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import app from 'firebase/compat/app';
 import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
 
 import firebaseConfig from './config';
 
 export class Firebase {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   db: any
+  storage: any
 
   constructor() {
     app.initializeApp(firebaseConfig);
     this.db = app.firestore();
+    this.storage = app.storage();
   }
 }
 
