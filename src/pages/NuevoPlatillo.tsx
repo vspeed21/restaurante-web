@@ -1,12 +1,28 @@
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 
-import Input from "../componenents/formulario/Input";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore
+import FileUploader from 'react-firebase-file-uploader';
+
 import { CATEGORIAS } from "../lib/constants";
+import useFirebase from '../hooks/useFirebase';
+
+import Input from "../componenents/formulario/Input";
 import Error from '../componenents/formulario/Error';
 
 function NuevoPlatillo() {
 
+  const [subiendoImage, setSubiendoImage] = useState(false);
+  const [progreso, setProgreso] = useState(0);
+  const [urlImagen, setUrlImagen] = useState('');
+
+  const { firebase } = useFirebase();
+
+  // schema to validate form fields
   const validationSchema = yup.object().shape({
     nombre: yup.string()
       .min(4, 'Los platillo deben tener al menos 4 caracteres')
@@ -21,6 +37,10 @@ function NuevoPlatillo() {
       .min(10, 'La descripción debe ser de al menos 10 caracteres'),
   });
 
+  // Hook para redireccionar
+  const navigate = useNavigate();
+
+  // inicializar valores
   const formik = useFormik({
     initialValues: {
       nombre: '',
@@ -28,12 +48,45 @@ function NuevoPlatillo() {
       categoria: '',
       imagen: '',
       descripcion: '',
+      existencia: true,
     },
     validationSchema: validationSchema,
-    onSubmit: values => {
-      console.log(values);
+    onSubmit: platillo => {
+      try {
+        platillo.imagen = urlImagen;
+        firebase.db.collection('platillos').add(platillo);
+        navigate('/menu');
+
+      } catch (error) {
+        console.log(error);
+      }
     }
   });
+
+  // images function
+  const handleUploadStart = () => {
+    setProgreso(0);
+    setSubiendoImage(true);
+  }
+
+  const handleUploadError = (error: unknown) => {
+    setSubiendoImage(false);
+    console.log(error);
+  }
+
+  const handleUploadSuccess = async (nombre: string) => {
+    setProgreso(100);
+    setSubiendoImage(false);
+
+    const url = await firebase.storage.ref('platillos')
+      .child(nombre).getDownloadURL();
+
+    setUrlImagen(url);
+  }
+
+  const handleProgress = (progresoParam: number) => {
+    setProgreso(progresoParam);
+  }
 
   return (
     <>
@@ -91,14 +144,44 @@ function NuevoPlatillo() {
           ) : null}
 
           <div className="flex flex-col mb-4">
-            <label className="text-sm font-bold text-gray-700" htmlFor="imagen">Imagen</label>
-            <Input
-              id="imagen"
-              type="file"
-              value={formik.values.imagen}
-              onChange={formik.handleChange}
+            {!urlImagen ? (
+              <label className="px-3 py-2 text-sm font-bold text-white bg-blue-700 rounded active:scale-95 w-60 hover:cursor-pointer hover:bg-blue-800" htmlFor="imagen">
+                Seleccione la imagen del platillo
+              </label>
+            ) : null}
+            <FileUploader
+              hidden
+              accept='image/*'
+              id='imagen'
+              name='imagen'
+              randomizeFilename
+              storageRef={firebase.storage.ref('platillos')}
+              onUploadStart={handleUploadStart}
+              onUploadError={handleUploadError}
+              onUploadSuccess={handleUploadSuccess}
+              onProgress={handleProgress}
             />
           </div>
+
+          {subiendoImage ? (
+            <div className='relative w-full h-10 border'>
+              <div className={`bg-green-500 absolute left-0 top-0 h-10 text-white text-sm items-center flex px-3`} style={{ width: `${progreso}%` }}>
+                {progreso} %
+              </div>
+            </div>
+          ) : null}
+
+          {urlImagen ? (
+            <div className='mb-4'>
+              <p className='py-1 mb-4 text-sm font-bold text-center text-white bg-green-500 rounded'>La imagen se subio correctamente</p>
+              <img
+                src={urlImagen}
+                alt='imagen del platillo'
+                title='Imagen del platillo subido'
+                className='w-44 h-44'
+              />
+            </div>
+          ) : null}
 
           <div className="flex flex-col mb-4">
             <label className="text-sm font-bold text-gray-700" htmlFor="descripcion">Descripción</label>
@@ -122,7 +205,6 @@ function NuevoPlatillo() {
           />
         </form>
       </div>
-
     </>
   )
 }
