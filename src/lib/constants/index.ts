@@ -12,10 +12,6 @@ const CATEGORIAS = [
     texto: 'Cena',
   },
   {
-    value: 'desayuno',
-    texto: 'Desayuno',
-  },
-  {
     value: 'bebidas',
     texto: 'Bebidas',
   },
